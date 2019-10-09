@@ -6,6 +6,14 @@ using StackExchange.Redis;
 
 namespace Common.DbUtils
 {
+    public static class DbRedisHelperExt
+    {
+        public static IEnumerable<RedisKey> GetAllKeys(this IDatabase db, RedisValue pattern = default(RedisValue))
+        {
+            return DbRedisHelper.GetAllKeys(db.Database, pattern);
+        }
+    }
+
     public class DbRedisHelper
     {
         public static string ConnectionString;
@@ -33,12 +41,12 @@ namespace Common.DbUtils
             return _redis;
         }
 
-        public static IEnumerable<RedisKey> GetAllKeys(int db = 0)
+        public static IEnumerable<RedisKey> GetAllKeys(int db = 0, RedisValue pattern = default(RedisValue))
         {
             var conn = GetConn();
             var endPoints = conn.GetEndPoints();
             var server = conn.GetServer(endPoints[0]);
-            return server.Keys(db);
+            return server.Keys(db, pattern);
         }
 
 
