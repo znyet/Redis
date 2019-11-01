@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using StackExchange.Redis;
 
-namespace Common.DbUtils
+namespace TestRedisV
 {
     public static class DbRedisHelperExt
     {
@@ -16,6 +15,7 @@ namespace Common.DbUtils
 
     public class DbRedisHelper
     {
+        //"localhost:6379,localhost:6380,password=123"
         public static string ConnectionString;
 
         public static string Ip;
@@ -75,3 +75,24 @@ namespace Common.DbUtils
 
     }
 }
+
+//abortConnect={bool}
+//allowAdmin={bool}
+//channelPrefix={string}
+//connectRetry={int}
+//connectTimeout={int}
+//configChannel={string}
+//defaultDatabase={int}
+//keepAlive={int}
+//name={string}
+
+//password={string}
+//proxy={proxy type}
+//resolveDns={bool}
+//serviceName={string}
+//ssl={bool}
+//sslHost={string}
+//syncTimeout={int}
+//tiebreaker={string}
+//version={string}
+//writeBuffer={int}
