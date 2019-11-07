@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Newtonsoft.Json;
 using ProtoBuf;
 using StackExchange.Redis;
@@ -124,6 +125,14 @@ namespace TestRedis
             }
         }
 
+        public static string SerializeToString(object val, Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.Default;
+            return encoding.GetString(Serialize(val));
+        }
+
+
         public static T Deserialize<T>(byte[] bytes)
         {
             using (var ms = new MemoryStream(bytes))
@@ -131,6 +140,16 @@ namespace TestRedis
                 return Serializer.Deserialize<T>(ms);
             }
         }
+
+
+
+        public static T Deserialize<T>(string data, Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.Default;
+            return Deserialize<T>(encoding.GetBytes(data));
+        }
+
 
         //public static byte[] ProtobufToBytes(this object val)
         //{
