@@ -5,6 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using ProtoBuf;
 using StackExchange.Redis;
+using MessagePack;
 
 namespace TestRedis
 {
@@ -107,6 +108,56 @@ namespace TestRedis
         public static T HashProtobufGet<T>(this IDatabase db, string key, string hashKey, CommandFlags flags = CommandFlags.None)
         {
             return ProtobufHelper.Deserialize<T>(db.HashGet(key, hashKey, flags));
+        }
+
+        #endregion
+
+        #region MessagePack
+
+        public static bool MsgPackSet(this IDatabase db, string key, object val, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            return db.StringSet(key, MessagePackSerializer.Serialize(val), expiry, when, flags);
+        }
+
+        public static bool MsgPackSet(this IDatabase db, KeyValuePair<string, object>[] values, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            var vs = new KeyValuePair<RedisKey, RedisValue>[values.Length];
+            for (var i = 0; i < values.Length; i++)
+            {
+                var item = values[i];
+                vs[i] = new KeyValuePair<RedisKey, RedisValue>(item.Key, MessagePackSerializer.Serialize(item.Value));
+            }
+            return db.StringSet(vs, when, flags);
+        }
+
+        public static T MsgPackGet<T>(this IDatabase db, string key, CommandFlags flags = CommandFlags.None)
+        {
+            return MessagePackSerializer.Deserialize<T>(db.StringGet(key, flags));
+        }
+
+        public static List<T> MsgPackGet<T>(this IDatabase db, RedisKey[] keys, CommandFlags flags = CommandFlags.None) where T : class
+        {
+            var values = db.StringGet(keys, flags);
+            var list = new List<T>();
+            foreach (byte[] val in values)
+            {
+                if (val != null)
+                    list.Add(MessagePackSerializer.Deserialize<T>(val));
+                else
+                    list.Add(null);
+            }
+            return list;
+        }
+
+
+        public static bool HashMsgPackSet(this IDatabase db, string key, string hashKey, object val, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            return db.HashSet(key, hashKey, MessagePackSerializer.Serialize(val), when, flags);
+        }
+
+        public static T HashMsgPackGet<T>(this IDatabase db, string key, string hashKey, CommandFlags flags = CommandFlags.None)
+        {
+            return MessagePackSerializer.Deserialize<T>(db.HashGet(key, hashKey, flags));
         }
 
         #endregion
