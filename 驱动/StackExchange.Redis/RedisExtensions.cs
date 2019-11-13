@@ -441,5 +441,130 @@ namespace TestRedis
 
     }
 
+    public static class RedisTranExtensionsAsync
+    {
+
+        #region Json
+
+        public static Task<bool> JsonSetAsync(this ITransaction db, RedisKey key, object val, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            return db.StringSetAsync(key, JsonConvert.SerializeObject(val), expiry, when, flags);
+        }
+
+        public static async Task<T> JsonGetAsync<T>(this ITransaction db, RedisKey key, CommandFlags flags = CommandFlags.None)
+        {
+            var val = await db.StringGetAsync(key, flags).ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<T>(val);
+        }
+
+        public static async Task<List<T>> JsonGetAsync<T>(this ITransaction db, RedisKey[] keys, CommandFlags flags = CommandFlags.None) where T : class
+        {
+            var values = await db.StringGetAsync(keys, flags).ConfigureAwait(false);
+            var list = new List<T>();
+            foreach (var val in values)
+            {
+                if (!string.IsNullOrEmpty(val))
+                    list.Add(JsonConvert.DeserializeObject<T>(val));
+                else
+                    list.Add(null);
+            }
+            return list;
+        }
+
+        public static Task<bool> HashJsonSetAsync(this ITransaction db, RedisKey key, RedisValue hashKey, object val, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            return db.HashSetAsync(key, hashKey, JsonConvert.SerializeObject(val), when, flags);
+        }
+
+        public static async Task<T> HashJsonGetAsync<T>(this ITransaction db, string key, string hashKey, CommandFlags flags = CommandFlags.None)
+        {
+            var val = await db.HashGetAsync(key, hashKey, flags).ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<T>(val);
+        }
+
+
+        #endregion
+
+        #region Protobuf
+
+        public static Task<bool> ProtobufSetAsync(this ITransaction db, RedisKey key, object val, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            return db.StringSetAsync(key, ProtobufHelper.Serialize(val), expiry, when, flags);
+        }
+
+        public static async Task<T> ProtobufGetAsync<T>(this ITransaction db, RedisKey key, CommandFlags flags = CommandFlags.None)
+        {
+            var val = await db.StringGetAsync(key, flags).ConfigureAwait(false);
+            return ProtobufHelper.Deserialize<T>(val);
+        }
+
+        public static async Task<List<T>> ProtobufGetAsync<T>(this ITransaction db, RedisKey[] keys, CommandFlags flags = CommandFlags.None) where T : class
+        {
+            var values = await db.StringGetAsync(keys, flags).ConfigureAwait(false);
+            var list = new List<T>();
+            foreach (var val in values)
+            {
+                if (!string.IsNullOrEmpty(val))
+                    list.Add(ProtobufHelper.Deserialize<T>(val));
+                else
+                    list.Add(null);
+            }
+            return list;
+        }
+
+        public static Task<bool> HashProtobufSetAsync(this ITransaction db, RedisKey key, RedisValue hashKey, object val, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            return db.HashSetAsync(key, hashKey, ProtobufHelper.Serialize(val), when, flags);
+        }
+
+        public static async Task<T> HashProtobufGetAsync<T>(this ITransaction db, string key, string hashKey, CommandFlags flags = CommandFlags.None)
+        {
+            var val = await db.HashGetAsync(key, hashKey, flags).ConfigureAwait(false);
+            return ProtobufHelper.Deserialize<T>(val);
+        }
+
+        #endregion
+
+        #region MessagePack
+
+        public static Task<bool> MsgPackSetAsync(this ITransaction db, RedisKey key, object val, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            return db.StringSetAsync(key, MessagePackSerializer.Serialize(val), expiry, when, flags);
+        }
+
+        public static async Task<T> MsgPackGetAsync<T>(this ITransaction db, RedisKey key, CommandFlags flags = CommandFlags.None)
+        {
+            var val = await db.StringGetAsync(key, flags).ConfigureAwait(false);
+            return MessagePackSerializer.Deserialize<T>(val);
+        }
+
+        public static async Task<List<T>> MsgPackGetAsync<T>(this ITransaction db, RedisKey[] keys, CommandFlags flags = CommandFlags.None) where T : class
+        {
+            var values = await db.StringGetAsync(keys, flags).ConfigureAwait(false);
+            var list = new List<T>();
+            foreach (var val in values)
+            {
+                if (!string.IsNullOrEmpty(val))
+                    list.Add(MessagePackSerializer.Deserialize<T>(val));
+                else
+                    list.Add(null);
+            }
+            return list;
+        }
+
+        public static Task<bool> HashMsgPackSetAsync(this ITransaction db, RedisKey key, RedisValue hashKey, object val, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            return db.HashSetAsync(key, hashKey, MessagePackSerializer.Serialize(val), when, flags);
+        }
+
+        public static async Task<T> HashMsgPackGetAsync<T>(this ITransaction db, string key, string hashKey, CommandFlags flags = CommandFlags.None)
+        {
+            var val = await db.HashGetAsync(key, hashKey, flags).ConfigureAwait(false);
+            return MessagePackSerializer.Deserialize<T>(val);
+        }
+
+        #endregion
+
+    }
 
 }
